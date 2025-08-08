@@ -7,7 +7,7 @@ The credits go to users on the mobileread.com forum, mainly _nhedgehog_,_m4mmon_
 - [mobileread thread](https://www.mobileread.com/forums/showthread.php?t=278728)
 - [Richard Butrons blog post](https://richard.burtons.org/2016/07/01/changing-the-cid-on-an-sd-card/)
 - [Lunator's blog post](http://luator.de/linux/2019/11/23/pocketbook-replace-memory.html)
-- Also credit goes to a russian forum (link is dead)
+- [4pda forum thread](https://4pda.to/forum/index.php?showtopic=538665&st=7540)
 
 ## About the device
 
@@ -34,9 +34,14 @@ Device          Boot   Start      End  Sectors   Size Id Type
 - The system checks the CID (Card Identification Data) of the SD card, to check if the card is the original one, other systems also do this (GPS devices, kiosks, etc.)
   - So just cloning the whole image to another SD card won't work, if the CID does not match the original one, the reader just shows a sand clock at boot (in most cases)
 
+## What you need
+- A computer, preferably with Linux. If you insist on using Windows, well, good luck
+- Computer with internal SD card reader, or alternatively rooted android device with SD card slot
+- Working micro SD card that is the same size or bigger than the original
+
 ## Guides
 
-### Read CID of and SD card
+### Read CID of an SD card
 - Be aware that in order to correctly interact with a SD card, you need a device with embedded card reader. **USB readers can't read the cid**, since the computer sees the device as unspecified USB mass storage device
 - It's easiest to do in Linux - `cat /sys/block/mmcblkX/device/cid` - replace X with the correct number (you can check with `lsblk`)
 - On Windows, you'll have to use specialized apps, i don't have experience with that, so you'll have to find something yourself
@@ -44,8 +49,127 @@ Device          Boot   Start      End  Sectors   Size Id Type
   - To execute the command either download an Android terminal emulator app or use [adb](https://developer.android.com/tools/adb)
     - **How to do it with adb:** `adb shell`, `su`,`/sys/block/mmcblkX/device/cid`
 
+#### Serial number of the card
+You can derive the cards SN from its CID
+- CID look like this `824a544e4361726410c708e2ef00e801`
+- Its SN looks like this `0xc708e2ef`, or well, at least the readers derives it like this
+- By comparing the old CID with the new CID, you can derive the new correct serial like this
+```
+                   c708e2ef
+824a544e4361726410 c708e2ef 00e801
+02544d534130384714 1286ddca 00e601
+```
+- So the other serial will be `0x1286ddca`
+
+### Create and write an image of the disk
+- I've used `dd` for simplicity, and also because i'm lazy so i just copied what others did
+- There's loads of alternatives for both Linux and Windows (like Win32DiskImager)
+Create image - `dd if=/dev/mmcblkX of=/path/to/pocketbook_image.dd bs=512 conv=noerror,sync status=progress`
+Write image - `dd if=/path/to/pocketbook_image.dd of=/dev/mmcblkX bs=512 conv=noerror,sync status=progress`
+
+### Make the main partition larger
+- Filesystem type is FAT32
+- In order to do that, the partition has to be deleted and recreated so **backup all contents of the parition**
+- Also, in my case. After booting up the reader with the resized partition, the device went into update mode. After the update, i couldn't open any of the books because of DRM protection. Those books were previously fine, others haven't reported anything like that
+- I've used fdisk, since fdisk is the goat
+```
+ ~ $ sudo fdisk /dev/mmcblk0
+
+Welcome to fdisk (util-linux 2.31.1).
+Changes will remain in memory only, until you decide to write them.
+Be careful before using the write command.
+
+
+Command (m for help): p
+Disk /dev/mmcblk0: 14.9 GiB, 15931539456 bytes, 31116288 sectors
+Units: sectors of 1 * 512 = 512 bytes
+Sector size (logical/physical): 512 bytes / 512 bytes
+I/O size (minimum/optimal): 512 bytes / 512 bytes
+Disklabel type: dos
+Disk identifier: 0x00000000
+
+Device          Boot   Start     End Sectors   Size Id Type
+/dev/mmcblk0p1       1009664 7747583 6737920   3.2G  b W95 FAT32
+/dev/mmcblk0p2  *      73728  139263   65536    32M  6 FAT16
+/dev/mmcblk0p3             1 1009664 1009664   493M 85 Linux extended
+/dev/mmcblk0p5        139264  172031   32768    16M 83 Linux
+/dev/mmcblk0p6        172032  204799   32768    16M 83 Linux
+/dev/mmcblk0p7        204800  275455   70656  34.5M 83 Linux
+/dev/mmcblk0p8        275456  776191  500736 244.5M 83 Linux
+/dev/mmcblk0p9        776192  976895  200704    98M 83 Linux
+/dev/mmcblk0p10       976896 1009663   32768    16M 83 Linux
+
+Partition table entries are not in disk order.
+
+Command (m for help): d
+Partition number (1-3,5-10, default 10): 1
+
+Partition 1 has been deleted.
+
+Command (m for help): n
+Partition type
+   p   primary (1 primary, 1 extended, 2 free)
+   l   logical (numbered from 5)
+Select (default p): p
+Partition number (1,4, default 1):
+First sector (1009665-31116287, default 1009665): 
+Last sector, +sectors or +size{K,M,G,T,P} (1009665-31116287, default 31116287): 
+
+Created a new partition 1 of type 'Linux' and of size 14.4 GiB.
+
+Command (m for help): t
+Partition number (1-3,5-10, default 10): 1
+Hex code (type L to list all codes): b
+
+Changed type of partition 'Linux' to 'W95 FAT32'.
+
+Command (m for help): p
+Disk /dev/mmcblk0: 14,9 GiB, 15931539456 bytes, 31116288 sectors
+Units: sectors of 1 * 512 = 512 bytes
+Sector size (logical/physical): 512 bytes / 512 bytes
+I/O size (minimum/optimal): 512 bytes / 512 bytes
+Disklabel type: dos
+Disk identifier: 0x00000000
+
+Device          Boot   Start      End  Sectors   Size Id Type
+/dev/mmcblk0p1       1011712 31116287 30104576  14,4G  b W95 FAT32
+/dev/mmcblk0p2  *      73728   139263    65536    32M  6 FAT16
+/dev/mmcblk0p3             1  1009664  1009664   493M 85 Linux extended
+/dev/mmcblk0p5        139264   172031    32768    16M 83 Linux
+/dev/mmcblk0p6        172032   204799    32768    16M 83 Linux
+/dev/mmcblk0p7        204800   275455    70656  34,5M 83 Linux
+/dev/mmcblk0p8        275456   776191   500736 244,5M 83 Linux
+/dev/mmcblk0p9        776192   976895   200704    98M 83 Linux
+/dev/mmcblk0p10       976896  1009663    32768    16M 83 Linux
+
+Partition table entries are not in disk order.
+
+Command (m for help): w
+The partition table has been altered.
+Synching disks.
+
+
+ ~ $ sudo mkdosfs -F 32 -I /dev/mmcblk0p1
+```
+## Methods
+- There are multiple ways, but unfortunately, it varies for different firmware versions
+- If any of these methods work and you used bigger card than the original, you can try to resize the main partition [like this](#make-the-main-partition-larger)
+
 ### Easiest method: Buy unlocked micro SD card
+- This method is obviously firmware independent since you won't be altering the system
 - Look up _unlocked CID micro SD_ or _custom CID micro SD_ or something along those lines. They are also sometimes called _coldgards_, mainly chinese sellers will pop up, but i've found a rather reliable seller from Europe - [zelemar.eu](https://zelemar.eu/)
 - You can either buy card that will already ship to you with with your custom CID, or the CID can be changed with some software they provide
-- When you have the new working card, just write the image to it and you're good to go
-- If you bought a bigger card and want to use the extra space provided, you can resize the first partition
+- When you have the new working card, just [write the image to it](#Create-and-write-an-image-of-the-disk) and you're good to go
+
+### For older firmware versions: Edit monitor.app
+
+### For newer firmware (2016) versions: Replace .freezestatus file
+1. Find out CIDs of both the new and original SD card - [guide](#read-cid-of-an-sd-card)
+2. Find out your readers serial number (YT123456..)
+   - It's written on the inner side of the back cover
+   - It's also written in _Settings->Info_ in the reader
+4. Write the original image to the new card - [guide](#create and-write-an-image-of-the-disk)
+5. Mount partition 9: `sudo mount /dev/mmcblkXp9 /some/folder`
+6. Download the _freezestatus_ tool from [here]()
+7. If you're on linux, compile it by running `make` in the _Linux_ folder
+8. In the serial folder, execute this `./serial --serial_number <ur serial number> --sd_serial 0x12345678`
