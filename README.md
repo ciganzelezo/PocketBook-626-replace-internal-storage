@@ -51,7 +51,7 @@ Device          Boot   Start      End  Sectors   Size Id Type
 
 ### Read serial number of an SD card
 - Read the serial in linux - `cat /sys/block/mmcblkX/device/serial`
-- The SD_prepare app used in [this](#for-older-firmware-versions:-edit-monitor.app) method also returns the serial number of card that's in the reader
+- The SD_prepare app used in [this](#for-older-firmware-versions-edit-monitorapp) method also returns the serial number of card that's in the reader
 You can also derive the cards SN from its CID
 - CID look like this `824a544e4361726410c708e2ef00e801`
 - Its SN looks like this `0xc708e2ef`
