@@ -1,4 +1,4 @@
-# PocketBook-626-replace-internal-storage
+# PocketBook 626 replace internal storage
 Guide/general information about replacing internal storage in the ebook reader PocketBook 626 (Touch Lux 2) and other PocketBook devices
 Since i didn't see a definitive guide that worked, i've decided to make one myself, so others won't have to go throught hours of torture like me.
 The credits go to users on the mobileread.com forum, mainly _nhedgehog_,_m4mmon_ and others.
