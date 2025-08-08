@@ -34,17 +34,18 @@ Device          Boot   Start      End  Sectors   Size Id Type
 - The system checks the CID (Card Identification Data) of the SD card, to check if the card is the original one, other systems also do this (GPS devices, kiosks, etc.)
   - So just cloning the whole image to another SD card won't work, if the CID does not match the original one, the reader just shows a sand clock at boot (in most cases)
 
-## Manuals
+## Guides
 
 ### Read CID of and SD card
 - Be aware that in order to correctly interact with a SD card, you need a device with embedded card reader. **USB readers can't read the cid**, since the computer sees the device as unspecified USB mass storage device
 - It's easiest to do in Linux - `cat /sys/block/mmcblkX/device/cid` - replace X with the correct number (you can check with `lsblk`)
 - On Windows, you'll have to use specialized apps, i don't have experience with that, so you'll have to find something yourself
 - It's also possible to do in rooted android - You'll have to identify the correct disk number, most probably it's 1 because 0 is device storage
-  - To execute the command either download a Android terminal emulator app or use [adb](https://developer.android.com/tools/adb)
+  - To execute the command either download an Android terminal emulator app or use [adb](https://developer.android.com/tools/adb)
     - **How to do it with adb:** `adb shell`, `su`,`/sys/block/mmcblkX/device/cid`
 
-### Buy unlocked micro SD card
+### Easiest method: Buy unlocked micro SD card
 - Look up _unlocked CID micro SD_ or _custom CID micro SD_ or something along those lines. They are also sometimes called _coldgards_, mainly chinese sellers will pop up, but i've found a rather reliable seller from Europe - [zelemar.eu](https://zelemar.eu/)
 - You can either buy card that will already ship to you with with your custom CID, or the CID can be changed with some software they provide
-..to be continued
+- When you have the new working card, just write the image to it and you're good to go
+- If you bought a bigger card and want to use the extra space provided, you can resize the first partition
