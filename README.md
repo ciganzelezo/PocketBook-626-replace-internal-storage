@@ -1,5 +1,5 @@
 # PocketBook 626 replace internal storage
-Guide/general information about replacing internal storage in the ebook reader PocketBook 626 (Touch Lux 2) and other PocketBook devices
+Guide/general information about replacing internal storage in the ebook reader PocketBook 626 and other PocketBook devices
 Since i didn't see a definitive guide that worked, i've decided to make one myself, so others won't have to go throught hours of torture like me.
 The credits go to users on the mobileread.com forum, mainly _nhedgehog_,_m4mmon_ and others.
 
@@ -209,7 +209,7 @@ ln -s monitor_patched.app pocketbook
 This does not work or SD cards manufactured recently, if you have old genuine Evo+ lying around (or no other option), you can try this
 - You need rooted Samsung device with micro SD slot
 - Creadit goes to [this guy](https://github.com/raburton/evoplus_cid)
-1. [Find out](#read-CID-(Card-Identification-Data)-of-an-SD-card) the origal CID
+1. [Find out](#read-CID-Card-Identification-Data-of-an-SD-card) the origal CID
 2. Use the evoplu_cid tool to try changing CID on another working card - [guide](https://richard.burtons.org/2016/07/01/changing-the-cid-on-an-sd-card/)
 4. If the results succeeds, check the new CID
 5. Write the original SD card image to the new card [like this](#create-and-write-an-image-of-the-disk) and enjoy
