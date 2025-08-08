@@ -204,3 +204,12 @@ ln -s monitor_patched.app pocketbook
 11. Unmount the partition - `sudo umount /dev/mmcblkXpí`
 12. Insert the card into your reader and enjoy
 - Optionally, if you got bigger card, you can resize the partition [like this](#make-the-main-partition-larger)
+
+### Changing CID of Samsung Evo+ SD card
+This does not work or SD cards manufactured recently, if you have old genuine Evo+ lying around (or no other option), you can try this
+- You need rooted Samsung device with micro SD slot
+- Creadit goes to [this guy](https://github.com/raburton/evoplus_cid)
+1. [Find out](#read-CID-(Card-Identification-Data)-of-an-SD-card) the origal CID
+2. Use the evoplu_cid tool to try changing CID on another working card - [guide](https://richard.burtons.org/2016/07/01/changing-the-cid-on-an-sd-card/)
+4. If the results succeeds, check the new CID
+5. Write the original SD card image to the new card [like this](#create-and-write-an-image-of-the-disk) and enjoy
