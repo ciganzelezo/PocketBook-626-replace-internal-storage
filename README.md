@@ -12,13 +12,13 @@ The credits go to users on the mobileread.com forum, mainly _nhedgehog_,_m4mmon_
 ## About the device
 
 ### Hardware
-- PocketBook 626, and probably most of the other models except the very old ones use a micro SD card for internal storage (don't confuse it with the additional storage, that is also a micro SD card.
-  - As everyone knows, SD cards don't really live that long, and over time, they often die or become read-only. That means it deletes all the stuff you saved after shutting down the reader.
+- PocketBook 626, and probably most of the other models except the very old ones use a micro SD card for internal storage (don't confuse it with the additional storage, that is also a micro SD card
+  - As everyone knows, SD cards don't really live that long, and over time, they often die or become read-only. That means it deletes all the stuff you saved after shutting down the reader
 
 ### OS
-- The device uses linux with very unstandard configuration that was made to be as cryptic as possible, so people like me or you can't do stuff they want
+- The device uses linux with very unstandard configuration to make our lives harder
 - It has 10 partitions that look like this
-  - p1 is the _main/user data_ parition where books and apps are stored, it's also the parition that shows up when you connect the reader to a PC
+  - _p1_ is the _main/user data_ parition where books and apps are stored, it's also the parition that shows up when you connect the reader to a PC
 ```
 Device          Boot   Start      End  Sectors   Size Id Type
 /dev/mmcblk0p1       1011712 31116287 30104576  14,4G  b W95 FAT32
@@ -31,8 +31,8 @@ Device          Boot   Start      End  Sectors   Size Id Type
 /dev/mmcblk0p9        776192   976895   200704    98M 83 Linux
 /dev/mmcblk0p10       976896  1009663    32768    16M 83 Linux
 ```
-- The system checks the CID (Card Identification Data) of the SD card, to check if the card is the original one, other systems also do this (GPS devices, kiosks, etc.)
-  - So just cloning the whole image to another SD card won't work, if the CID does not match the original one, the reader just shows a sand clock at boot (in most cases)
+- The system checks serial number of the SD card, to check if the card is the original one, other systems also do this (GPS devices, kiosks, etc.)
+  - So just cloning the whole image to another SD card won't work, if the CID does not match the original one, the reader just shows a sand clock at boot (or another error)
 
 ## What you need
 - A computer, preferably with Linux. If you insist on using Windows, well, good luck
@@ -41,7 +41,7 @@ Device          Boot   Start      End  Sectors   Size Id Type
 
 ## Guides
 
-### Read CID of an SD card
+### Read CID (Card Identification Data) of an SD card
 - Be aware that in order to correctly interact with a SD card, you need a device with embedded card reader. **USB readers can't read the cid**, since the computer sees the device as unspecified USB mass storage device
 - It's easiest to do in Linux - `cat /sys/block/mmcblkX/device/cid` - replace X with the correct number (you can check with `lsblk`)
 - On Windows, you'll have to use specialized apps, i don't have experience with that, so you'll have to find something yourself
@@ -49,10 +49,12 @@ Device          Boot   Start      End  Sectors   Size Id Type
   - To execute the command either download an Android terminal emulator app or use [adb](https://developer.android.com/tools/adb)
     - **How to do it with adb:** `adb shell`, `su`,`/sys/block/mmcblkX/device/cid`
 
-#### Serial number of the card
-You can derive the cards SN from its CID
+### Read serial number of an SD card
+- Read the serial in linux - `cat /sys/block/mmcblkX/device/serial`
+- The SD_prepare app used in [this](#for-older-firmware-versions:-edit-monitor.app) method also returns the serial number of card that's in the reader
+You can also derive the cards SN from its CID
 - CID look like this `824a544e4361726410c708e2ef00e801`
-- Its SN looks like this `0xc708e2ef`, or well, at least the readers derives it like this
+- Its SN looks like this `0xc708e2ef`
 - By comparing the old CID with the new CID, you can derive the new correct serial like this
 ```
                    c708e2ef
@@ -69,7 +71,7 @@ Write image - `dd if=/path/to/pocketbook_image.dd of=/dev/mmcblkX bs=512 conv=no
 
 ### Make the main partition larger
 - Filesystem type is FAT32
-- In order to do that, the partition has to be deleted and recreated so **backup all contents of the parition**
+- In order to do that, the partition has to be deleted and recreated, so **backup all contents of the parition** so you can later put them into the new partition
 - Also, in my case. After booting up the reader with the resized partition, the device went into update mode. After the update, i couldn't open any of the books because of DRM protection. Those books were previously fine, others haven't reported anything like that
 - I've used fdisk, since fdisk is the goat
 ```
@@ -157,19 +159,48 @@ Synching disks.
 
 ### Easiest method: Buy unlocked micro SD card
 - This method is obviously firmware independent since you won't be altering the system
-- Look up _unlocked CID micro SD_ or _custom CID micro SD_ or something along those lines. They are also sometimes called _coldgards_, mainly chinese sellers will pop up, but i've found a rather reliable seller from Europe - [zelemar.eu](https://zelemar.eu/)
+- Look up _unlocked CID micro SD_ or _custom CID micro SD_ or something along those lines. They are also sometimes called _coldcards_, mainly chinese sellers will pop up, but i've found a rather reliable seller from Europe - [zelemar.eu](https://zelemar.eu/)
 - You can either buy card that will already ship to you with with your custom CID, or the CID can be changed with some software they provide
 - When you have the new working card, just [write the image to it](#Create-and-write-an-image-of-the-disk) and you're good to go
 
 ### For older firmware versions: Edit monitor.app
+This method has been patched for a long time, so it probably won't work
+
+1. Download the SD_prepare.zip from [here]()
+2. Extract it on the new microSD card
+3. Insert the card into the e-reader using the external card slot
+4. Start the device and execute the SD_prepare application (should be shown in the list of applications). This will create two files .sd_original_serial and monitor.app on the card
+5. Remove the card and safe the two files somewhere else
+6. Open the monitor.app in a hex editor (i used Ghex)
+   - Search for this string `/sys/block/mmcblk%c/device/serial` - that's where the monitor.app gets the cards sn
+7. Replace this string with /mnt/secure/.sd_original_serial
+   - **This string is little shorter**, you can either pad the beggining with couple zeros or make file name longer, e.g. `/mnt/secure/.sd_original_serialll`, but you'll have to rename the file to match it
+8. Save the modified file with the name _monitor_patched.app_
+9. Mount /dev/mmcblkXp9 - `sudo mount /dev/mmcblkXp9 /some/folder`, and copy the file .sd_original_serial to it
+10. Mount /dev/mmcblkXp8 - `sudo mount /dev/mmcblkXp8 /some/folder1`, and copy the file monitor_patched.app to it
+11. In the directory in which you mounted partition 8 execute the following commands:
+
+```
+chmod a+x monitor_patched.app
+mv pocketbook pocketbook_ORIG
+ln -s monitor_patched.app pocketbook
+```
+
+12. Unmout the two partitions `sudo umount /dev/mmcblkXp8 && sudo mount /dev/mmcblkXp9`
+13. Put the new card into the reader and see if it worked
 
 ### For newer firmware (2016) versions: Replace .freezestatus file
 1. Find out CIDs of both the new and original SD card - [guide](#read-cid-of-an-sd-card)
 2. Find out your readers serial number (YT123456..)
    - It's written on the inner side of the back cover
    - It's also written in _Settings->Info_ in the reader
-4. Write the original image to the new card - [guide](#create and-write-an-image-of-the-disk)
+4. Write the original image to the new card - [guide](#create-and-write-an-image-of-the-disk)
 5. Mount partition 9: `sudo mount /dev/mmcblkXp9 /some/folder`
 6. Download the _freezestatus_ tool from [here]()
 7. If you're on linux, compile it by running `make` in the _Linux_ folder
-8. In the serial folder, execute this `./serial --serial_number <ur serial number> --sd_serial 0x12345678`
+8. In the serial folder, execute this `./serial --serial_number <ur serial number> --sd_serial 0x<ur sn>`
+9. In the same folder, _.freezestatus_ file was created
+10. Overwrite the _.freezestatus_ file in the mounted partition
+11. Unmount the partition - `sudo umount /dev/mmcblkXpí`
+12. Insert the card into your reader and enjoy
+- Optionally, if you got bigger card, you can resize the partition [like this](#make-the-main-partition-larger)
