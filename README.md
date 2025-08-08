@@ -166,7 +166,7 @@ Synching disks.
 ### For older firmware versions: Edit monitor.app
 This method has been patched for a long time, so it probably won't work
 
-1. Download the SD_prepare.zip from [here]()
+1. Download the SD_prepare.zip from [here](SD_prepare.zip)
 2. Extract it on the new microSD card
 3. Insert the card into the e-reader using the external card slot
 4. Start the device and execute the SD_prepare application (should be shown in the list of applications). This will create two files .sd_original_serial and monitor.app on the card
@@ -196,7 +196,7 @@ ln -s monitor_patched.app pocketbook
    - It's also written in _Settings->Info_ in the reader
 4. Write the original image to the new card - [guide](#create-and-write-an-image-of-the-disk)
 5. Mount partition 9: `sudo mount /dev/mmcblkXp9 /some/folder`
-6. Download the _freezestatus_ tool from [here]()
+6. Download the _freezestatus_ tool from [here](progs.7z)
 7. If you're on linux, compile it by running `make` in the _Linux_ folder
 8. In the serial folder, execute this `./serial --serial_number <ur serial number> --sd_serial 0x<ur sn>`
 9. In the same folder, _.freezestatus_ file was created
