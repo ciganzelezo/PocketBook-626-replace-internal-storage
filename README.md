@@ -3,7 +3,9 @@ Guide/general information about replacing internal storage in the ebook reader P
 Since i didn't see a definitive guide that worked, i've decided to make one myself, so others won't have to go throught hours of torture like me.
 The credits go to users on the mobileread.com forum, mainly _nhedgehog_,_m4mmon_ and others.
 
-## Souces
+>I've separated guides to do certain tasks with the actual methods, so it's shorter.
+
+## Sources
 - [mobileread thread](https://www.mobileread.com/forums/showthread.php?t=278728)
 - [Richard Butrons blog post](https://richard.burtons.org/2016/07/01/changing-the-cid-on-an-sd-card/)
 - [Lunator's blog post](http://luator.de/linux/2019/11/23/pocketbook-replace-memory.html)
